@@ -39,4 +39,6 @@ await syncIssues(
   assigneesToIgnoreList,
 );
 
+console.log("Everything is synced!");
+
 Deno.exit(0);
