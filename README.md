@@ -1,6 +1,6 @@
 # Syncer of GitHub Issues and Notion
 
-The goal is that from a search on GitHub Issues (<https://github.com/issues>) synchronize them with a Notion database (<https://www.notion.so/>).
+The goal is that from a search on GitHub Issues (<https://github.com/issues>) synchronize them with a Notion database (<https://www.notion.so>).
 
 ## How to use
 
