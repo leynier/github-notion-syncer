@@ -1,9 +1,8 @@
 // deno-lint-ignore-file no-explicit-any
-import { config, DotenvConfig } from "https://deno.land/x/dotenv@v3.2.0/mod.ts";
 import { Client } from "https://deno.land/x/notion_sdk@v1.0.4/src/mod.ts";
 import { Issue } from "./github.ts";
 
-async function syncSchema(client: Client, envConfig: DotenvConfig) {
+async function syncSchema(client: Client, notionDatabaseId: string) {
   const properties = new Map([
     ["Id", { type: "rich_text" }],
     ["Title", { type: "title" }],
@@ -15,7 +14,7 @@ async function syncSchema(client: Client, envConfig: DotenvConfig) {
   ]);
   let finalProperties = new Map<string, any>();
   let database = await client.databases.retrieve({
-    database_id: envConfig.NOTION_DATABASE_ID,
+    database_id: notionDatabaseId,
   });
   let currentProperties = database.properties;
   let currentPropertyNames = Object.keys(currentProperties);
@@ -28,12 +27,12 @@ async function syncSchema(client: Client, envConfig: DotenvConfig) {
     finalProperties.set(name, null);
   });
   await client.databases.update({
-    database_id: envConfig.NOTION_DATABASE_ID,
+    database_id: notionDatabaseId,
     properties: Object.fromEntries(finalProperties),
   });
   finalProperties = new Map<string, any>();
   database = await client.databases.retrieve({
-    database_id: envConfig.NOTION_DATABASE_ID,
+    database_id: notionDatabaseId,
   });
   currentProperties = database.properties;
   currentPropertyNames = Object.keys(currentProperties);
@@ -47,20 +46,20 @@ async function syncSchema(client: Client, envConfig: DotenvConfig) {
     });
   });
   await client.databases.update({
-    database_id: envConfig.NOTION_DATABASE_ID,
+    database_id: notionDatabaseId,
     properties: Object.fromEntries(finalProperties),
   });
 }
 
 async function getPages(
   client: Client,
-  envConfig: DotenvConfig,
+  notionDatabaseId: string,
 ): Promise<any[]> {
   let cursor: string | undefined = undefined;
   let pages = <any> [];
   while (true) {
     const response: any = await client.databases.query({
-      database_id: envConfig.NOTION_DATABASE_ID,
+      database_id: notionDatabaseId,
       start_cursor: cursor,
     });
     cursor = response.next_cursor;
@@ -72,17 +71,19 @@ async function getPages(
   return pages;
 }
 
-async function syncIssues(issues: Issue[]): Promise<void> {
+async function syncIssues(
+  issues: Issue[],
+  notionToken: string,
+  notionDatabaseId: string,
+  assigneesToIgnore: string[],
+): Promise<void> {
   const issuesDict = new Map<string, Issue>(
     issues.map((issue) => [issue.id, issue]),
   );
-  const envConfig = config();
-  const client = new Client({ auth: envConfig.NOTION_TOKEN });
-  await syncSchema(client, envConfig);
-  const assigneesToIgnore = new Set<string>(
-    envConfig.ASSIGNEE_IGNORE_LIST.split(","),
-  );
-  const pages = await getPages(client, envConfig);
+  // const envConfig = config();
+  const client = new Client({ auth: notionToken });
+  await syncSchema(client, notionDatabaseId);
+  const pages = await getPages(client, notionDatabaseId);
   const pagesIdsDict = new Map<string, any>(
     pages.map((page) => [page.properties.Id.rich_text[0].text.content, page]),
   );
@@ -110,7 +111,7 @@ async function syncIssues(issues: Issue[]): Promise<void> {
       continue;
     }
     await client.pages.create({
-      parent: { database_id: envConfig.NOTION_DATABASE_ID },
+      parent: { database_id: notionDatabaseId },
       properties: {
         Id: { rich_text: [{ text: { content: issue.id } }] },
         Title: { title: [{ text: { content: issue.title } }] },
@@ -118,7 +119,7 @@ async function syncIssues(issues: Issue[]): Promise<void> {
         Url: { url: issue.url },
         Assignees: {
           multi_select: issue.assignees.filter(
-            (assignee) => !assigneesToIgnore.has(assignee),
+            (assignee) => !assigneesToIgnore.includes(assignee),
           ).map((assignee) => ({
             name: assignee,
           })),
@@ -154,7 +155,7 @@ async function syncIssues(issues: Issue[]): Promise<void> {
     const assigneesIsEqual = page.properties.Assignees.multi_select.map(
       (assignee: any) => assignee.name,
     ).sort().join(",") === issue.assignees.filter(
-      (assignee) => !assigneesToIgnore.has(assignee),
+      (assignee) => !assigneesToIgnore.includes(assignee),
     ).sort().join(",");
     const labelsIsEqual = page.properties.Labels.multi_select.map(
       (label: any) => label.name,
@@ -174,7 +175,7 @@ async function syncIssues(issues: Issue[]): Promise<void> {
         Url: { url: issue.url },
         Assignees: {
           multi_select: issue.assignees.filter(
-            (assignee) => !assigneesToIgnore.has(assignee),
+            (assignee) => !assigneesToIgnore.includes(assignee),
           ).map((assignee) => ({
             name: assignee,
           })),

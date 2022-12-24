@@ -1,6 +1,5 @@
 // deno-lint-ignore-file no-explicit-any
 import { Octokit } from "https://cdn.skypack.dev/octokit?dts";
-import { config } from "https://deno.land/x/dotenv@v3.2.0/mod.ts";
 
 class Issue {
   id: string;
@@ -41,14 +40,16 @@ function parseIssuesFromResponse(response: any): Issue[] {
   return issues;
 }
 
-async function getIssues(): Promise<Issue[]> {
-  const envConfig = config();
-  const octokit = new Octokit({ auth: envConfig.GITHUB_TOKEN });
+async function getIssues(
+  githubToken: string,
+  githubQuery: string,
+): Promise<Issue[]> {
+  const octokit = new Octokit({ auth: githubToken });
   let issues: Issue[] = [];
   let page = 1;
   while (true) {
     const response = await octokit.rest.search.issuesAndPullRequests({
-      q: envConfig.GITHUB_QUERY,
+      q: githubQuery,
       page: page,
     });
     const currentIssues = parseIssuesFromResponse(response);
