@@ -25,7 +25,7 @@ The goal is that from a search on GitHub Issues (<https://github.com/issues>) sy
     - `NOTION_TOKEN`: Notion token with access to the database that you want to sync
     - `NOTION_DATABASE_ID`: Notion database ID that you want to sync
     - `ASSIGNEES_TO_IGNORE`: GitHub usernames to ignore (optional)
-4. Done! The syncronization will run every day 5 minutes 😎
+4. Done! The syncronization will run every 5 minutes 😎
 5. (Optional) If you want to change the schedule, edit the file `.github/workflows/sync.yml`
 
 **Note: Please, if this repository has been helpful to you, consider giving it a star ⭐. Thanks in advance.**
