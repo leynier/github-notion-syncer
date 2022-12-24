@@ -27,10 +27,7 @@ class Issue {
   }
 }
 
-const envConfig = config();
-const octokit = new Octokit({ auth: envConfig.GITHUB_TOKEN });
-
-function getIssues(response: any) {
+function parseIssuesFromResponse(response: any): Issue[] {
   const issues: Issue[] = response.data.items.map((item: any) =>
     new Issue({
       id: item.id.toString(),
@@ -44,19 +41,24 @@ function getIssues(response: any) {
   return issues;
 }
 
-let issues: Issue[] = [];
-let page = 1;
-while (true) {
-  const response = await octokit.rest.search.issuesAndPullRequests({
-    q: envConfig.GITHUB_QUERY,
-    page: page,
-  });
-  const currentIssues = getIssues(response);
-  if (currentIssues.length === 0) {
-    break;
+async function getIssues(): Promise<Issue[]> {
+  const envConfig = config();
+  const octokit = new Octokit({ auth: envConfig.GITHUB_TOKEN });
+  let issues: Issue[] = [];
+  let page = 1;
+  while (true) {
+    const response = await octokit.rest.search.issuesAndPullRequests({
+      q: envConfig.GITHUB_QUERY,
+      page: page,
+    });
+    const currentIssues = parseIssuesFromResponse(response);
+    if (currentIssues.length === 0) {
+      break;
+    }
+    page++;
+    issues = issues.concat(currentIssues);
   }
-  page++;
-  issues = issues.concat(currentIssues);
+  return issues;
 }
 
-export { issues };
+export { getIssues, Issue };

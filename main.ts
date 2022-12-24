@@ -1,5 +1,7 @@
-import { issues as githubIssues } from "./github.ts";
+import { getIssues } from "./github.ts";
+import { syncIssues } from "./notion.ts";
 
-console.log(githubIssues.length);
+const issues = await getIssues();
+await syncIssues(issues);
 
 Deno.exit(0);
