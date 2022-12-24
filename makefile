@@ -1,2 +1,2 @@
 run:
-	deno run -A main.ts
+	deno run -A notion.ts

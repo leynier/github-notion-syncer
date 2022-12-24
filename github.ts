@@ -2,25 +2,12 @@
 import { Octokit } from "https://cdn.skypack.dev/octokit?dts";
 import { config } from "https://deno.land/x/dotenv@v3.2.0/mod.ts";
 
-class Assignee {
-  username: string;
-  url: string;
-
-  constructor(arg: {
-    username: string;
-    url: string;
-  }) {
-    this.username = arg.username;
-    this.url = arg.url;
-  }
-}
-
 class Issue {
   id: string;
   title: string;
   repo: string;
   url: string;
-  assignees: Assignee[];
+  assignees: string[];
   labels: string[];
 
   constructor(arg: {
@@ -28,7 +15,7 @@ class Issue {
     title: string;
     repo: string;
     url: string;
-    assignees: Assignee[];
+    assignees: string[];
     labels: string[];
   }) {
     this.id = arg.id;
@@ -41,9 +28,7 @@ class Issue {
 }
 
 const envConfig = config();
-const githubToken = envConfig.GITHUB_TOKEN;
-
-const octokit = new Octokit({ auth: githubToken });
+const octokit = new Octokit({ auth: envConfig.GITHUB_TOKEN });
 
 function getIssues(response: any) {
   const issues: Issue[] = response.data.items.map((item: any) =>
@@ -52,12 +37,7 @@ function getIssues(response: any) {
       title: item.title,
       repo: item.repository_url.split("/").slice(-1)[0],
       url: item.html_url,
-      assignees: item.assignees.map((assignee: any) =>
-        new Assignee({
-          username: assignee.login,
-          url: assignee.html_url,
-        })
-      ),
+      assignees: item.assignees.map((assignee: any) => assignee.login),
       labels: item.labels.map((label: any) => label.name),
     })
   );
@@ -68,7 +48,7 @@ let issues: Issue[] = [];
 let page = 1;
 while (true) {
   const response = await octokit.rest.search.issuesAndPullRequests({
-    q: "is:open is:issue assignee:leynier archived:false user:educup",
+    q: envConfig.GITHUB_QUERY,
     page: page,
   });
   const currentIssues = getIssues(response);
