@@ -15,8 +15,8 @@ jobs:
           deno-version: v1.x
       - name: Run sync script
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_QUERY: ${{ secrets.GITHUB_QUERY }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GH_QUERY: ${{ secrets.GH_QUERY }}
           NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
           NOTION_DATABASE_ID: ${{ secrets.NOTION_DATABASE_ID }}
           ASSIGNEES_TO_IGNORE: ${{ secrets.ASSIGNEES_TO_IGNORE }}

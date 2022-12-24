@@ -11,9 +11,9 @@ function checkParam(param: string | undefined, name: string) {
   }
 }
 
-const githubToken = Deno.env.get("GITHUB_TOKEN") || env.GITHUB_TOKEN;
+const githubToken = Deno.env.get("GH_TOKEN") || env.GH_TOKEN;
 
-const githubQuery = Deno.env.get("GITHUB_QUERY") || env.GITHUB_QUERY;
+const githubQuery = Deno.env.get("GH_QUERY") || env.GH_QUERY;
 
 const notionToken = Deno.env.get("NOTION_TOKEN") || env.NOTION_TOKEN;
 
@@ -26,8 +26,8 @@ const assigneesToIgnoreList = assigneesToIgnore
   ? assigneesToIgnore.split(",")
   : [];
 
-checkParam(githubToken, "GITHUB_TOKEN");
-checkParam(githubQuery, "GITHUB_QUERY");
+checkParam(githubToken, "GH_TOKEN");
+checkParam(githubQuery, "GH_QUERY");
 checkParam(notionToken, "NOTION_TOKEN");
 checkParam(notionDatabaseId, "NOTION_DATABASE_ID");
 
