@@ -10,7 +10,6 @@ async function syncSchema(client: Client, notionDatabaseId: string) {
     ["Url", { type: "url" }],
     ["Assignees", { type: "multi_select" }],
     ["Labels", { type: "multi_select" }],
-    ["Priority", { type: "number" }],
   ]);
   let finalProperties = new Map<string, any>();
   let database = await client.databases.retrieve({
@@ -129,7 +128,6 @@ async function syncIssues(
             name: label,
           })),
         },
-        Priority: { number: 0 },
       },
     });
   }
